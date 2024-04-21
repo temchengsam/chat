@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>簡易聊天系統</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap'); /* 使用不同字体权重 */
+    
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh; /* 让页面填满视窗 */
+            font-family: 'Roboto', sans-serif; /* 现代字体 */
+            background: linear-gradient(135deg, #f5f7fa, #c3cfe2); /* 柔和的渐变背景 */
+            display: flex;
+            justify-content: center; /* 中心布局 */
+            align-items: center;
+        }
+    
+        .container {
+            display: flex;
+            flex-direction: column; /* 纵向排列 */
+            height: 80%; /* 让容器填满大部分页面 */
+            width: 85%; /* 设置宽度 */
+            max-width: 900px; /* 最大宽度 */
+            border-radius: 15px; /* 圆角 */
+            overflow: hidden; /* 防止溢出 */
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2); /* 柔和阴影 */
+            background-color: white; /* 白色背景 */
+            animation: fadeIn 0.8s ease-in-out; /* 页面加载时的淡入效果 */
+        }
+    
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+            }
+            100% {
+                opacity: 1;
+            }
+        }
+    
+        .display-area {
+            flex: 3; /* 上方区域占用3/4 */
+            padding: 25px; /* 增加内边距 */
+            overflow-y: auto; /* 允许滚动 */
+            font-size: 1.2em; /* 增加字体大小 */
+            line-height: 1.6; /* 增加行高 */
+            background: linear-gradient(to bottom, #f5f7fa, #ffffff); /* 渐变背景 */
+        }
+    
+        .typing-area {
+            flex: 1; /* 下方区域占用1/4 */
+            padding: 25px; /* 增加内边距 */
+            background-color: white; /* 白色背景 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    
+        #userInput {
+            width: 75%; /* 输入框占据大部分空间 */
+            padding: 12px; /* 增加内边距 */
+            border: 1px solid #ddd; /* 边框 */
+            border-radius: 12px; /* 圆角 */
+            outline: none; /* 去除聚焦边框 */
+            transition: all 0.3s ease; /* 过渡效果 */
+            font-size: 1.2em; /* 增加字体大小 */
+        }
+    
+        #userInput:focus {
+            border-color: #009688; /* 聚焦时改变边框颜色 */
+            box-shadow: 0 0 10px rgba(0, 150, 136, 0.3); /* 聚焦阴影 */
+        }
+    
+        button {
+            padding: 12px 25px; /* 按钮大小 */
+            background-color: #009688; /* 现代绿色 */
+            color: white; /* 白色文字 */
+            border: none; /* 无边框 */
+            border-radius: 12px; /* 圆角 */
+            cursor: pointer; /* 鼠标变为指针 */
+            transition: all 0.3s ease; /* 过渡效果 */
+            font-size: 1.2em; /* 增加字体大小 */
+        }
+    
+        button:hover {
+            background-color: #00796b; /* 悬停时更深的绿色 */
+            box-shadow: 0 0 10px rgba(0, 121, 107, 0.5); /* 添加悬停阴影 */
+        }
+    
+        .text-a {
+            color: #ff5252; /* 红色文本 */
+            font-weight: bold; /* 加粗 */
+            font-size: 1.3em; /* 更大的字体 */
+            line-height: 1.6; /* 增加行高 */
+        }
+    
+        .text-b {
+            color: #42a5f5; /* 蓝色文本 */
+            font-weight: bold; /* 加粗 */
+            font-size: 1.3em; /* 更大的字体 */
+            line-height: 1.6; /* 增加行高 */
+        }
+    
+        #role-selection {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh; /* 角色选择界面占满整个视窗 */
+            background: linear-gradient(135deg, #ffffff, #e3e3e3); /* 柔和渐变背景 */
+            font-size: 1.2em; /* 增加字体大小 */
+            animation: fadeIn 1s ease-in-out; /* 页面加载时的淡入效果 */
+        }
+    
+        #role-selection button {
+            padding: 15px 30px; /* 更大的按钮 */
+            background-color: #3498db; /* 蓝色按钮 */
+            color: white; /* 白色文字 */
+            border: none; /* 无边框 */
+            border-radius: 12px; /* 圆角 */
+            cursor: pointer; /* 鼠标变为指针 */
+            transition: all 0.3s ease; /* 过渡效果 */
+            font-size: 1.2em; /* 增加字体大小 */
+        }
+    
+        #role-selection button:hover {
+            background-color: #2980b9; /* 悬停时更深的蓝色 */
+            box-shadow: 0 0 10px rgba(52, 152, 219, 0.5); /* 悬停阴影 */
+        }
+    </style>
+    
+    
+    
+    
+
+    
+    <script>
+        var userRole = null; // 角色：A 或 B
+
+        function setRole(role) {
+            userRole = role; // 設置角色
+            document.getElementById("role-selection").style.display = "none"; // 隱藏角色選擇區域
+            document.getElementById("chat-container").style.display = "flex"; // 顯示聊天區域
+            fetchData(); // 立即加載一次數據
+            setInterval(fetchData, 1000); // 每秒重新整理
+        }
+
+        function sendData() {
+            if (userRole === null) {
+                alert("請先選擇角色");
+                return;
+            }
+
+            var userInput = document.getElementById("userInput").value;
+            if (userInput === "") {
+                alert("請輸入訊息");
+                return;
+            }
+
+            var formattedInput = (userRole === "A" ? 'A:{' : 'B:{') + userInput + '}'; // 格式化
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "https://script.google.com/macros/s/AKfycbwdDDZahrUZdfQEQUVUbMnUg90MR72IU1_wKCxIVACcTj1eRjZKcsO-WZJfrOyhVS07mA/exec", true);
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    document.getElementById("userInput").value = ""; // 清空輸入框
+                    fetchData(); // 發送後重新抓取數據
+                }
+            };
+
+            xhr.send("text=" + encodeURIComponent(formattedInput));
+        }
+
+        function fetchData() {
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", "https://script.google.com/macros/s/AKfycbwdDDZahrUZdfQEQUVUbMnUg90MR72IU1_wKCxIVACcTj1eRjZKcsO-WZJfrOyhVS07mA/exec", true);
+
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    var data = JSON.parse(xhr.responseText);
+
+                    var displayArea = document.getElementById("displayArea");
+                    displayArea.innerHTML = ""; // 清空顯示區
+
+                    data.forEach(function(row) {
+                        var content = row[0];
+
+                        var p = document.createElement("p");
+                        if (content.startsWith("A:{") && content.endsWith("}")) {
+                            p.className = "text-a"; // 設置為A方的樣式
+                            p.textContent = content.substring(3, content.length - 1); // 移除大括號
+                        } else if (content.startsWith("B:{") && content.endsWith("}")) {
+                            p.className = "text-b"; // 設置為B方的樣式
+                            p.textContent = content.substring(3, content.length - 1); // 移除大括號
+                        }
+
+                        displayArea.appendChild(p);
+                    });
+                }
+            };
+
+            xhr.send();
+        }
+    </script>
+</head>
+<body>
+    <div class="container" id="chat-container" style="display: none;">
+        <div class="display-area" id="displayArea">
+            <!-- 這個區域用於顯示訊息 -->
+        </div>
+        <div class="typing-area">
+            <input type="text" id="userInput" placeholder="請輸入訊息...">
+            <button onclick="sendData()">發送</button>
+        </div>
+    </div>
+
+    <div id="role-selection">
+        <p>請選擇您是A方還是B方：</p>
+        <button onclick="setRole('A')">我是A方</button>
+        <button onclick="setRole('B')">我是B方</button>
+    </div>
+</body>
+</html>
